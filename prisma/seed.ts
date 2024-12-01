@@ -1,34 +1,96 @@
-import { PrismaClient } from "@prisma/client";
-import bcrypt from "bcryptjs";
+import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcryptjs';
 
+// Initialize Prisma Client
 const prisma = new PrismaClient();
 
 async function main() {
-    // Hash a password for the super admin user
-    const superAdminPassword = "superadmin123"; // You can change this password
+    console.log("🌱 Starting the seed process...");
+
+    // Permissions
+    const permissions = [
+        "manage-roles",
+        "view-roles",
+        "update-roles",
+        "delete-roles",
+        "create-permissions",
+        "view-permissions",
+        "update-permissions",
+        "delete-permissions",
+        "assign-permissions"
+    ];
+    console.log("🔑 Seeding permissions...");
+    for (const permission of permissions) {
+        await prisma.permission.upsert({
+            where: { name: permission },
+            update: {},
+            create: { name: permission },
+        });
+    }
+    console.log("✅ Permissions seeded.");
+
+    // Roles
+    const roles = ['Admin', 'Editor', 'Viewer'];
+    console.log("🔑 Seeding roles...");
+    for (const role of roles) {
+        await prisma.role.upsert({
+            where: { name: role },
+            update: {},
+            create: { name: role },
+        });
+    }
+    console.log("✅ Roles seeded.");
+
+    // Assign Permissions to Admin Role
+    console.log("🔗 Assigning permissions to Admin role...");
+    const adminRole = await prisma.role.findUnique({ where: { name: 'Admin' } });
+    const allPermissions = await prisma.permission.findMany();
+    if (adminRole) {
+        for (const permission of allPermissions) {
+            await prisma.rolePermission.upsert({
+                where: { roleId_permissionId: { roleId: adminRole.id, permissionId: permission.id } },
+                update: {},
+                create: { roleId: adminRole.id, permissionId: permission.id },
+            });
+        }
+        console.log("✅ Admin role permissions assigned.");
+    } else {
+        console.error("❌ Admin role not found!");
+    }
+
+    // Create a Super Admin User
+    console.log("👤 Creating Super Admin user...");
+    const superAdminPassword = "SuperAdmin123"; // Replace with a secure password
     const hashedPassword = await bcrypt.hash(superAdminPassword, 10);
 
-    // Create a super admin user
-    const superAdmin = await prisma.user.create({
-        data: {
-            name: "Super Admin",    // Super Admin Name
-            email: "superadmin@example.com",  // Super Admin Email (unique)
-            password: hashedPassword,  // Hashed Password
-            emailVerified: true,  // Email is verified for admin
-            otp: null,  // No OTP required for admin
-            refreshToken: "",  // You can leave this empty for now
-            passwordResetToken: "",  // No password reset token for super admin
-            passwordResetTokenExpires: null,  // No expiration needed
-            profileImage: null,  // No expiration needed
+    const superAdmin = await prisma.user.upsert({
+        where: { email: 'superadmin@example.com' },
+        update: {},
+        create: {
+            name: 'Super Admin',
+            email: 'superadmin@example.com',
+            password: hashedPassword,
         },
     });
+    console.log("✅ Super Admin user created.");
 
-    console.log("Super admin user created:", superAdmin);
+    // Assign Admin Role to Super Admin User
+    console.log("🔗 Assigning Admin role to Super Admin...");
+    if (adminRole) {
+        await prisma.userRole.upsert({
+            where: { userId_roleId: { userId: superAdmin.id, roleId: adminRole.id } },
+            update: {},
+            create: { userId: superAdmin.id, roleId: adminRole.id },
+        });
+        console.log("✅ Admin role assigned to Super Admin.");
+    }
+
+    console.log("🌱 Seed process completed!");
 }
 
 main()
     .catch((e) => {
-        throw e;
+        console.error("❌ Error during seed process:", e);
     })
     .finally(async () => {
         await prisma.$disconnect();

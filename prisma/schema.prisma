@@ -7,6 +7,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+/// User model represents application users.
 model User {
   id                        Int       @id @default(autoincrement())
   name                      String?
@@ -15,9 +16,65 @@ model User {
   emailVerified             Boolean   @default(false)
   otp                       String?
   refreshToken              String?
-  passwordResetToken        String? // Stores the hashed token
+  passwordResetToken        String? // Stores the hashed reset token
   passwordResetTokenExpires DateTime? // Token expiration time
-  profileImage              String?
+  profileImage              String? // URL of profile image
   createdAt                 DateTime  @default(now())
   updatedAt                 DateTime  @updatedAt
+
+  // Relations
+  userRoles UserRole[]
+}
+
+/// Role model defines user roles in the system (e.g., Admin, User).
+model Role {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  rolePermissions RolePermission[]
+  userRoles       UserRole[]
+}
+
+/// Permission model defines access control permissions (e.g., 'read', 'write').
+model Permission {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  rolePermissions RolePermission[]
+}
+
+/// UserRole model maps users to their roles (many-to-many relationship).
+model UserRole {
+  id     String @id @default(cuid())
+  userId Int // Foreign key to User
+  roleId String // Foreign key to Role
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, roleId]) // Prevent duplicate user-role assignments
+  @@index([userId]) // Optimize queries filtering by userId
+  @@index([roleId]) // Optimize queries filtering by roleId
+}
+
+/// RolePermission model maps roles to their permissions (many-to-many relationship).
+model RolePermission {
+  id           String @id @default(cuid())
+  roleId       String // Foreign key to Role
+  permissionId String // Foreign key to Permission
+
+  // Relations
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@unique([roleId, permissionId]) // Prevent duplicate role-permission assignments
+  @@index([roleId]) // Optimize queries filtering by roleId
+  @@index([permissionId]) // Optimize queries filtering by permissionId
 }

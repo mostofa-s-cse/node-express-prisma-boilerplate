@@ -1,6 +1,6 @@
 import { Router } from "express";
 import * as userController from "../../ controllers/v1/userController";
-import { isAuthenticated } from "../../middlewares/authMiddleware";
+import { isAuthenticated } from "../../middlewares/isAuthenticated";
 import { upload } from "../../utils/fileUpload";
 
 const userRouter = Router();

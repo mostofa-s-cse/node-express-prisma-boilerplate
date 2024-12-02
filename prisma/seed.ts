@@ -60,7 +60,7 @@ async function main() {
 
     // Create a Super Admin User
     console.log("👤 Creating Super Admin user...");
-    const superAdminPassword = "SuperAdmin123"; // Replace with a secure password
+    const superAdminPassword = "password123"; // Replace with a secure password
     const hashedPassword = await bcrypt.hash(superAdminPassword, 10);
 
     const superAdmin = await prisma.user.upsert({
@@ -70,6 +70,7 @@ async function main() {
             name: 'Super Admin',
             email: 'superadmin@example.com',
             password: hashedPassword,
+            emailVerified:true
         },
     });
     console.log("✅ Super Admin user created.");

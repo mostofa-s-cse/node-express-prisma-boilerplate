@@ -31,10 +31,11 @@ export const sendEmail = async (to: string, subject: string, name: string, otp: 
         </style>
     </head>
     <body>
-        <div class="email-container">
+       <div class="email-container">
             <h2 class="email-header">Hello, ${name}!</h2>
             <p class="email-content">Your OTP is: <strong>${otp}</strong></p>
             <p class="email-content">Please use this OTP to verify your email.</p>
+            <p class="email-content">Note: This OTP will expire in <strong>3 minutes</strong>.</p>
         </div>
     </body>
     </html>`;

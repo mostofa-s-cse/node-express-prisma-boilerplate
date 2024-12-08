@@ -1,4 +1,4 @@
-# Node.js Authentication API
+# Node.js Authentication API Boilerplate with Typescript
 
 A Node.js server built using **Express.js**, **PostgreSQL**, and **Prisma ORM**, following the **MVC architecture**. This project includes user authentication with **email verification**, **OTP**, **JWT access tokens**, and **refresh tokens**, along with robust error handling.
 
@@ -109,11 +109,13 @@ This will create the database tables based on the Prisma schema.
   ```
     npx prisma studio
    ```
-  
 
+5. Compile TypeScript:
+   ```bash
+   npx tsc
 
-5. Run the Application
-
+6. Run the Application
+   
    ```bash
    npm run dev
 

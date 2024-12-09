@@ -37,4 +37,18 @@ roleRouter.delete(
     roleController.deleteRole
 );
 
+// Assign a role to a user
+roleRouter.post(
+    "/assign-role",
+    isAuthenticated,
+    checkPermission("assign-role"),  // Check if the user has permission
+    roleController.assignRoleToUser);
+
+// Get all roles of a user
+roleRouter.get(
+    "/:userId/roles",
+    isAuthenticated,
+    checkPermission("roles-users"),  // Check if the user has permission
+    roleController.getUserRoles);
+
 export default roleRouter;

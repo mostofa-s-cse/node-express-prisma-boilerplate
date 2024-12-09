@@ -53,3 +53,55 @@ export const deleteRole = async (id: string) => {
 
     await prisma.role.delete({ where: { id } });
 };
+
+
+// Assign a role to a user
+export const assignRoleToUser = async (userId: number, roleId: string) => {
+    // Check if the user exists
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+        throw new AppError("User not found", 404);
+    }
+
+    // Check if the role exists
+    const role = await prisma.role.findUnique({ where: { id: roleId } });
+    if (!role) {
+        throw new AppError("Role not found", 404);
+    }
+
+    // Check if the user already has the role
+    const existingUserRole = await prisma.userRole.findUnique({
+        where: { userId_roleId: { userId, roleId } },
+    });
+
+    if (existingUserRole) {
+        throw new AppError("User already assigned to this role", 400);
+    }
+
+    // Assign the role to the user
+    const userRole = await prisma.userRole.create({
+        data: {
+            userId,
+            roleId,
+        },
+    });
+
+    return userRole;
+};
+
+// Get all roles assigned to a user
+export const getUserRoles = async (userId: number) => {
+    // Check if the user exists
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+        throw new AppError("User not found", 404);
+    }
+
+    // Fetch and return the roles
+    const roles = await prisma.userRole.findMany({
+        where: { userId },
+        include: { role: true }, // Include role details
+    });
+
+    return roles.map((userRole) => userRole.role);
+};

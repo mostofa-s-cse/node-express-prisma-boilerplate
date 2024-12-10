@@ -1,13 +1,13 @@
 import { Request, Response, NextFunction } from "express";
-import prisma from "../config/database"; // Adjust the path if necessary
-import { AppError } from "./errorHandler"; // Import your custom error handling class
+import prisma from "../config/database";
+import { AppError } from "./errorHandler";
 
 export const checkPermission = (requiredPermission: string) => {
     return async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const userId = (req as any).userId; // Assuming `isAuthenticated` middleware attaches this to the request
+            const userId = parseInt(req.user?.id ?? '', 10); // Parse userId to integer
 
-            if (!userId) {
+            if (isNaN(userId)) {
                 return next(new AppError("Unauthorized: User not authenticated", 401));
             }
 
@@ -26,18 +26,16 @@ export const checkPermission = (requiredPermission: string) => {
             // Fetch permissions for the user's roles
             const rolePermissions = await prisma.rolePermission.findMany({
                 where: { roleId: { in: roleIds } },
-                include: { permission: true }, // Including the related permissions
+                include: { permission: true },
             });
 
-            // Extract the permissions the user has
             const userPermissions = rolePermissions.map((rp) => rp.permission.name);
 
-            // Check if the user has the required permission
             if (!userPermissions.includes(requiredPermission)) {
                 return next(new AppError("Forbidden: Insufficient permissions", 403));
             }
 
-            next(); // Permission check passed, proceed to the next middleware or controller
+            next();
         } catch (error) {
             console.error("Error in checkPermission middleware:", error);
             return next(new AppError("Internal Server Error: Permission check failed", 500));

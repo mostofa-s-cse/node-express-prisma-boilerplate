@@ -1,8 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
-import { AppError } from "./errorHandler"; // Import your AppError class
+import { AppError } from "./errorHandler";
 
-// Extend the Request interface to include the user property
 declare global {
     namespace Express {
         interface Request {
@@ -21,28 +20,21 @@ export const isAuthenticated = (req: Request, res: Response, next: NextFunction)
             throw new AppError("No token provided or invalid format", 401);
         }
 
-        const token = authHeader.split(" ")[1]; // Extract the token
+        const token = authHeader.split(" ")[1];
 
-        if (!token) {
-            throw new AppError("No token provided", 401); // Handle case where token is empty
-        }
-
-        // Verify the token
         const decoded = jwt.verify(token, process.env.JWT_SECRET!) as jwt.JwtPayload;
 
         if (!decoded || !decoded.id) {
             throw new AppError("Invalid token payload", 401);
         }
 
-        req.user = { id: decoded.id }; // Attach user ID to the request object
+        req.user = { id: decoded.id }; // Attach `user.id` to `req.user`
 
-        next(); // Proceed to the next middleware or route handler
+        next();
     } catch (error) {
-        // Check for JWT-specific errors
         if (error instanceof jwt.JsonWebTokenError) {
             return next(new AppError("Invalid or expired token", 401));
         }
-        // Generic error
         next(error);
     }
 };

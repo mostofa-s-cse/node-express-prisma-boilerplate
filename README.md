@@ -401,8 +401,33 @@ Base URL: http://localhost:5000/api/v1
    }
 
 
+### 15. Assign role to user
+- Endpoint: POST /roles/assign-role
+- Authorization: Bearer Token (Access Token)
+
+- Request Body
+   ```json
+   {
+    "userId": 3,
+    "roleId": "cm4iojhp30000tmvm5p7q9ng1"
+   }
+
+- Response:
+   ```json
+   {
+    "success": true,
+    "message": "Role assigned to user successfully",
+    "data": {
+        "id": "cm4iosk5t00018l3cziii8ykx",
+        "userId": 3,
+        "roleId": "cm4iojhp30000tmvm5p7q9ng1"
+    }
+   }
+
+
+
 ### Permissions Management Endpoints
-### 15. Get All Permissions
+### 16. Get All Permissions
 - Endpoint: GET /permissions
 - Authorization: Bearer Token (Access Token)
 
@@ -470,7 +495,7 @@ Base URL: http://localhost:5000/api/v1
        }
 
 
-### 16. Create Permission
+### 17. Create Permission
 - Endpoint: POST /permissions
 - Authorization: Bearer Token (Access Token)
 
@@ -494,7 +519,7 @@ Base URL: http://localhost:5000/api/v1
    }
 
 
-### 17. Update Permission
+### 18. Update Permission
 - Endpoint: PUT /permissions/:id
 - Authorization: Bearer Token (Access Token)
 
@@ -517,7 +542,7 @@ Base URL: http://localhost:5000/api/v1
     }
    }
 
-### 18. Delete Permission
+### 19. Delete Permission
 
 - Endpoint: DELETE /permissions/:id
 - Authorization: Bearer Token (Access Token)
@@ -528,3 +553,25 @@ Base URL: http://localhost:5000/api/v1
     "success": true,
     "message": "Permissions deleted successfully"
    }
+
+
+
+
+### 20. Assign permission to role
+- Endpoint: POST /permissions/assign-permission
+- Authorization: Bearer Token (Access Token)
+
+- Request Body
+   ```json
+   {
+    "roleId": "cm4iojhp30000tmvm5p7q9ng1",
+    "permissionId":"cm4ha0hj80001ivb18540o7i1"
+   }
+
+- Response:
+   ```json
+   {
+    "success": true,
+    "message": "Permission assigned successfully"
+   }
+

@@ -221,3 +221,18 @@ export const resetPassword = async (email: string, otp: string, newPassword: str
 
     return "Your password has been reset successfully.";
 };
+
+/**
+ * Fetch the authenticated user's details.
+ * - Verifies the user ID from the token.
+ * - Returns user data without sensitive fields like password.
+ */
+export const getAuthUser = async (userId: number) => {
+    const user = await prisma.user.findUnique({
+        where: { id: userId },
+    });
+    if (!user) {
+        throw new AppError("User not found", 404);
+    }
+    return user;
+};

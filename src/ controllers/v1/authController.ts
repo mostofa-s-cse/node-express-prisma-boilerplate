@@ -147,3 +147,27 @@ export const resetPassword = async (req: Request, res: Response, next: NextFunct
         next(error); // Pass the error to the error handler middleware
     }
 };
+
+
+import * as userService from "../../services/v1/userService";
+
+/**
+ * Get the authenticated user's details.
+ * - Requires the `userId` extracted from the token middleware.
+ */
+export const getAuthUser = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const userId = Number(req.user?.id);
+        if (isNaN(userId)) {
+            throw new AppError("Invalid user ID", 400);
+        }
+
+        const user = await authService.getAuthUser(userId);
+        res.status(200).json({
+            success: true,
+            data: user,
+        });
+    } catch (error) {
+        next(error);
+    }
+};

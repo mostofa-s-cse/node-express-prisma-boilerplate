@@ -19,7 +19,7 @@ export const createRole = async (name: string) => {
 
 // Get all roles
 export const getAllRoles = async () => {
-    return await prisma.role.findMany({
+    return prisma.role.findMany({
         select: {
             id: true,
             name: true,
@@ -103,5 +103,5 @@ export const getUserRoles = async (userId: number) => {
         include: { role: true }, // Include role details
     });
 
-    return roles.map((userRole) => userRole.role);
+    return roles.map((userRole) => userRole["role"]);
 };

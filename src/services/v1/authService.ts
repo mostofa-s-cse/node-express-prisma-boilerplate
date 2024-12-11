@@ -30,7 +30,7 @@ export const registerUser = async (email: string, password: string, name: string
 
     const otp = generateOtp(); // Generate OTP using utility
     await sendEmail(email, "Verify Your Email", name, otp); // Send OTP email
-    await prisma.user.update({ where: { id: user.id }, data: { otp } });
+    await prisma.user.update({ where: { id: user["id"] }, data: { otp } });
 
     return { message: "User registered successfully. Please verify your email." };
 };
@@ -48,7 +48,7 @@ export const verifyOtp = async (email: string, otp: string) => {
     if (!user) {
         throw new AppError("User not found", 404);
     }
-    if (user.otp !== otp) {
+    if (user["otp"] !== otp) {
         throw new AppError("Invalid OTP", 400);
     }
 
@@ -72,16 +72,16 @@ export const resendOtp = async (email: string) => {
     if (!user) {
         throw new AppError("User not found", 404);
     }
-    if (user.emailVerified) {
+    if (user["emailVerified"]) {
         throw new AppError("Email is already verified", 400);
     }
 
-    if (!user.name) {
+    if (!user["name"]) {
         throw new AppError("User name is missing", 400);
     }
 
     const otp = generateOtp(); // Generate new OTP using utility
-    await sendEmail(email, "Verify Your Email", user.name, otp);
+    await sendEmail(email, "Verify Your Email", user["name"], otp);
 
     await prisma.user.update({ where: { email }, data: { otp } });
 
@@ -101,19 +101,19 @@ export const loginUser = async (email: string, password: string) => {
     if (!user) {
         throw new AppError("Invalid email or password", 401);
     }
-    if (!user.emailVerified) {
+    if (!user["emailVerified"]) {
         throw new AppError("Email not verified", 403);
     }
 
-    const isPasswordValid = await bcrypt.compare(password, user.password);
+    const isPasswordValid = await bcrypt.compare(password, user["password"]);
     if (!isPasswordValid) {
         throw new AppError("Invalid email or password", 401);
     }
 
-    const accessToken = jwt.sign({ id: user.id }, process.env.JWT_SECRET!, { expiresIn: "60m" });
-    const refreshToken = jwt.sign({ id: user.id }, process.env.JWT_REFRESH_SECRET!, { expiresIn: "7d" });
+    const accessToken = jwt.sign({ id: user["id"] }, process.env.JWT_SECRET!, { expiresIn: "60m" });
+    const refreshToken = jwt.sign({ id: user["id"] }, process.env.JWT_REFRESH_SECRET!, { expiresIn: "7d" });
 
-    await prisma.user.update({ where: { id: user.id }, data: { refreshToken } });
+    await prisma.user.update({ where: { id: user["id"] }, data: { refreshToken } });
 
     return { user, accessToken, refreshToken };
 };
@@ -130,17 +130,17 @@ export const refreshTokens = async (refreshToken: string) => {
 
     // Retrieve the user from the database
     const user = await prisma.user.findUnique({ where: { id: userId } });
-    if (!user || user.refreshToken !== refreshToken) {
+    if (!user || user["refreshToken"] !== refreshToken) {
         throw new AppError("Invalid refresh token", 401);
     }
 
     // Generate new access and refresh tokens
-    const accessToken = jwt.sign({ id: user.id }, process.env.JWT_SECRET!, { expiresIn: "15m" });
-    const newRefreshToken = jwt.sign({ id: user.id }, process.env.JWT_REFRESH_SECRET!, { expiresIn: "7d" });
+    const accessToken = jwt.sign({ id: user["id"] }, process.env.JWT_SECRET!, { expiresIn: "15m" });
+    const newRefreshToken = jwt.sign({ id: user["id"] }, process.env.JWT_REFRESH_SECRET!, { expiresIn: "7d" });
 
     // Update the refresh token in the database
     await prisma.user.update({
-        where: { id: user.id },
+        where: { id: user["id"] },
         data: { refreshToken: newRefreshToken },
     });
 
@@ -178,7 +178,7 @@ export const requestPasswordReset = async (email: string) => {
 
     // Send the OTP via email
     const emailMessage = `You requested a password reset. Use the following OTP to reset your password: ${otp}. It will expire in 3 minutes.`;
-    await sendEmail(email, "Password Reset OTP", user.name || "User", emailMessage);
+    await sendEmail(email, "Password Reset OTP", user["name"] || "User", emailMessage);
 
     return "Password reset OTP has been sent to your email. Please check your inbox.";
 };
@@ -197,12 +197,12 @@ export const resetPassword = async (email: string, otp: string, newPassword: str
     }
 
     // Check if the OTP matches
-    if (user.passwordResetToken !== otp) {
+    if (user["passwordResetToken"] !== otp) {
         throw new AppError("Invalid OTP", 400);
     }
 
     // Check if OTP has expired (handle case where passwordResetTokenExpires might be null)
-    if (!user.passwordResetTokenExpires || user.passwordResetTokenExpires < new Date()) {
+    if (!user["passwordResetTokenExpires"] || user["passwordResetTokenExpires"] < new Date()) {
         throw new AppError("OTP has expired", 400);
     }
 

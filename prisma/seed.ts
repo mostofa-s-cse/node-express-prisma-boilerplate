@@ -48,9 +48,9 @@ async function main() {
     if (adminRole) {
         for (const permission of allPermissions) {
             await prisma.rolePermission.upsert({
-                where: { roleId_permissionId: { roleId: adminRole.id, permissionId: permission.id } },
+                where: { roleId_permissionId: { roleId: adminRole["id"], permissionId: permission.id } },
                 update: {},
-                create: { roleId: adminRole.id, permissionId: permission.id },
+                create: { roleId: adminRole["id"], permissionId: permission.id },
             });
         }
         console.log("✅ Admin role permissions assigned.");
@@ -79,9 +79,9 @@ async function main() {
     console.log("🔗 Assigning Admin role to Super Admin...");
     if (adminRole) {
         await prisma.userRole.upsert({
-            where: { userId_roleId: { userId: superAdmin.id, roleId: adminRole.id } },
+            where: { userId_roleId: { userId: superAdmin["id"], roleId: adminRole["id"] } },
             update: {},
-            create: { userId: superAdmin.id, roleId: adminRole.id },
+            create: { userId: superAdmin["id"], roleId: adminRole["id"] },
         });
         console.log("✅ Admin role assigned to Super Admin.");
     }

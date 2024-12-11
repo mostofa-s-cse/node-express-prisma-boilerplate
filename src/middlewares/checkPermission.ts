@@ -29,7 +29,7 @@ export const checkPermission = (requiredPermission: string) => {
                 include: { permission: true },
             });
 
-            const userPermissions = rolePermissions.map((rp) => rp.permission.name);
+            const userPermissions = rolePermissions.map((rp) => rp["permission"].name);
 
             if (!userPermissions.includes(requiredPermission)) {
                 return next(new AppError("Forbidden: Insufficient permissions", 403));

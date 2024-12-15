@@ -1,43 +1,91 @@
-import request from 'supertest';
-import app from '../app'; // Import your Express app
+import bcrypt from "bcrypt";
+const request = require("supertest");
+import app from "../app";
+import prisma from "../config/database";
 
-describe('Authentication Tests', () => {
-    test('Should register a new user', async () => {
-        const response = await request(app).post('/auth/register').send({
-            name: 'Test User',
-            email: 'testuser@example.com',
-            password: 'password123',
+describe("Auth API Tests", () => {
+    let accessToken: string; // Ensure a semicolon here if you are using a semicolon-based style
+
+    beforeAll(async () => {
+        await prisma.user.deleteMany(); // Clean the database
+        await prisma.user.create({
+            data: {
+                email: "mostofa.mm48@gmail.com",
+                password: bcrypt.hashSync("password123", 10), // Hash the password
+                otp: "123456", // Add OTP for verification test
+            },
         });
-        expect(response.statusCode).toBe(201);
-        expect(response.body).toHaveProperty('token');
     });
 
-    test('Should login with valid credentials', async () => {
-        const response = await request(app).post('/auth/login').send({
-            email: 'testuser@example.com',
-            password: 'password123',
-        });
-        expect(response.statusCode).toBe(200);
-        expect(response.body).toHaveProperty('token');
+    afterAll(async () => {
+        await prisma.$disconnect();
     });
 
-    test('Should reject login with invalid credentials', async () => {
-        const response = await request(app).post('/auth/login').send({
-            email: 'testuser@example.com',
-            password: 'wrongpassword',
+    describe("POST /register", () => {
+        it("should register a new user successfully", async () => {
+            const response = await request(app)
+                .post("/api/v1/auth/register")
+                .send({
+                    email: "newuser@example.com",
+                    password: "Password123!"
+                });
+
+            expect(response.status).toBe(201);
+            expect(response.body.data).toHaveProperty("message", "User registered successfully. Please verify your email.");
         });
-        expect(response.statusCode).toBe(401);
+
+        it("should fail if email is already registered", async () => {
+            const response = await request(app)
+                .post("/api/v1/auth/register")
+                .send({
+                    email: "mostofa.mm48@gmail.com",
+                    password: "AnotherPassword123!"
+                });
+
+            expect(response.body).toHaveProperty("message", "User already exists");
+        });
     });
 
-    test('Should fetch the authenticated user', async () => {
-        const loginResponse = await request(app).post('/auth/login').send({
-            email: 'testuser@example.com',
-            password: 'password123',
+
+    describe("POST api/v1/auth/verify", () => {
+        it("should verify user with valid OTP", async () => {
+            const response = await request(app)
+                .post("/api/v1/auth/verify")
+                .send({
+                    email: "mostofa.mm48@gmail.com",
+                    otp: "123456", // Ensure this matches the seeded data
+                });
+
+            expect(response.body.data).toHaveProperty("message", "Email verified successfully.");
         });
-        const response = await request(app)
-            .get('/auth/me')
-            .set('Authorization', `Bearer ${loginResponse.body.token}`);
-        expect(response.statusCode).toBe(200);
-        expect(response.body).toHaveProperty('email', 'testuser@example.com');
+    });
+
+    describe("POST /login", () => {
+        it("should login successfully with correct credentials", async () => {
+            const response = await request(app)
+                .post("/api/v1/auth/login")
+                .send({
+                    email: "mostofa.mm48@gmail.com",
+                    password: "password123", // Use the same password that was hashed during registration
+                });
+
+            expect(response.status).toBe(200);
+            expect(response.body.data).toHaveProperty("accessToken"); // Assuming you return accessToken on successful login
+            accessToken = response.body.data.accessToken; // Store accessToken for subsequent requests
+        });
+    });
+
+    describe("GET /api/v1/auth/me", () => {
+        it("should retrieve authenticated user info", async () => {
+            // Ensure `accessToken` has been set
+            if (!accessToken) throw new Error("Access token not set. Login test might have failed.");
+
+            const response = await request(app)
+                .get("/api/v1/auth/me")
+                .set("Authorization", `Bearer ${accessToken}`);
+
+            expect(response.status).toBe(200);
+            expect(response.body.data).toHaveProperty("email", "mostofa.mm48@gmail.com");
+        });
     });
 });

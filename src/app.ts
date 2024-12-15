@@ -7,7 +7,7 @@ import errorLogger from "./middlewares/errorLogger";
 
 import cluster from "cluster";
 import os from "os";
-
+require("dotenv").config();
 // Create Express app
 const app = express();
 

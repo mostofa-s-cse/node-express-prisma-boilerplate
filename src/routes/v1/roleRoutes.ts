@@ -9,7 +9,7 @@ const roleRouter = Router();
 roleRouter.post(
     "/",
     isAuthenticated,
-    checkPermission("manage-roles"),  // Check if the user has permission
+    checkPermission("create-roles"),  // Check if the user has permission
     roleController.createRole
 );
 
@@ -41,14 +41,14 @@ roleRouter.delete(
 roleRouter.post(
     "/assign-role",
     isAuthenticated,
-    checkPermission("assign-role"),  // Check if the user has permission
+    checkPermission("assign-roles"),  // Check if the user has permission
     roleController.assignRoleToUser);
 
 // Get all roles of a user
 roleRouter.get(
     "/:userId/roles",
     isAuthenticated,
-    checkPermission("roles-users"),  // Check if the user has permission
+    checkPermission("view-roles"),  // Check if the user has permission
     roleController.getUserRoles);
 
 export default roleRouter;

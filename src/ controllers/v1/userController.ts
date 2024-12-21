@@ -1,7 +1,33 @@
 import { Request, Response, NextFunction } from "express";
 import * as userService from "../../services/v1/userService"; // Import the service layer
 
-// Get all users
+/**
+ * Create user
+ * @param req
+ * @param res
+ * @param next
+ */
+export const createUser = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { name, email, password } = req.body;
+        const user = await userService.createUser(name, email, password);
+        res.status(201).json({
+            success: true,
+            message: "User created successfully",
+            data: user,
+        });
+    } catch (error) {
+        next(error);
+    }
+}
+
+
+/**
+ * View All users
+ * @param req
+ * @param res
+ * @param next
+ */
 export const getAllUsers = async (req: Request, res: Response, next: NextFunction) => {
     console.log("req",req);
     try {
@@ -16,7 +42,12 @@ export const getAllUsers = async (req: Request, res: Response, next: NextFunctio
     }
 };
 
-// Update user
+/**
+ * Update user
+ * @param req
+ * @param res
+ * @param next
+ */
 export const updateUser = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { id } = req.params;
@@ -41,7 +72,12 @@ export const updateUser = async (req: Request, res: Response, next: NextFunction
 };
 
 
-// Delete user
+/**
+ * Delete user
+ * @param req
+ * @param res
+ * @param next
+ */
 export const deleteUser = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { id } = req.params;

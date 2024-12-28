@@ -7,29 +7,28 @@ describe("Auth API Tests", () => {
     let accessToken: string; // Ensure a semicolon here if you are using a semicolon-based style
 
     beforeAll(async () => {
-        await prisma.user.deleteMany(); // Clean the database
         await prisma.user.create({
             data: {
-                email: "mostofa.mm48@gmail.com",
+                name: "Test User",
+                email: "testuser@gmail.com",
                 password: bcrypt.hashSync("password123", 10), // Hash the password
                 otp: "123456", // Add OTP for verification test
             },
         });
     });
-
+    
     afterAll(async () => {
         await prisma.$disconnect();
-    });
+    });    
 
     describe("POST /register", () => {
         it("should register a new user successfully", async () => {
             const response = await request(app)
                 .post("/api/v1/auth/register")
                 .send({
-                    email: "newuser@example.com",
+                    email: "newtestuser@example.com",
                     password: "Password123!"
                 });
-
             expect(response.status).toBe(201);
             expect(response.body.data).toHaveProperty("message", "User registered successfully. Please verify your email.");
         });
@@ -38,11 +37,11 @@ describe("Auth API Tests", () => {
             const response = await request(app)
                 .post("/api/v1/auth/register")
                 .send({
-                    email: "mostofa.mm48@gmail.com",
-                    password: "AnotherPassword123!"
+                    email: "testuser@gmail.com",
+                    password: "password123"
                 });
-
-            expect(response.body).toHaveProperty("message", "User already exists");
+                expect(response.status).toBe(400);
+                expect(response.body).toHaveProperty("message", "User already exists");
         });
     });
 
@@ -52,7 +51,7 @@ describe("Auth API Tests", () => {
             const response = await request(app)
                 .post("/api/v1/auth/verify")
                 .send({
-                    email: "mostofa.mm48@gmail.com",
+                    email: "testuser@gmail.com",
                     otp: "123456", // Ensure this matches the seeded data
                 });
 
@@ -65,10 +64,9 @@ describe("Auth API Tests", () => {
             const response = await request(app)
                 .post("/api/v1/auth/login")
                 .send({
-                    email: "mostofa.mm48@gmail.com",
+                    email: "testuser@gmail.com",
                     password: "password123", // Use the same password that was hashed during registration
                 });
-
             expect(response.status).toBe(200);
             expect(response.body.data).toHaveProperty("accessToken"); // Assuming you return accessToken on successful login
             accessToken = response.body.data.accessToken; // Store accessToken for subsequent requests
@@ -85,7 +83,7 @@ describe("Auth API Tests", () => {
                 .set("Authorization", `Bearer ${accessToken}`);
 
             expect(response.status).toBe(200);
-            expect(response.body.data).toHaveProperty("email", "mostofa.mm48@gmail.com");
+            expect(response.body.data).toHaveProperty("email", "testuser@gmail.com");
         });
     });
 });

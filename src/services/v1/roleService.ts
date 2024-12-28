@@ -4,8 +4,13 @@ import { AppError } from "../../middlewares/errorHandler";  // Custom error hand
 // Create a new role
 export const createRole = async (name: string) => {
     const existingRole = await prisma.role.findUnique({ where: { name } });
+    // Check if the role already exists
     if (existingRole) {
         throw new AppError("Role already exists", 400);
+    }
+    // Check if the role name is provided
+    if (name === "") {
+        throw new AppError("Role name is required", 400);
     }
 
     const role = await prisma.role.create({
@@ -32,8 +37,13 @@ export const getAllRoles = async () => {
 // Update a role
 export const updateRole = async (id: string, data: { name: string }) => {
     const existingRole = await prisma.role.findUnique({ where: { id } });
+    // Check if the role exists
     if (!existingRole) {
         throw new AppError("Role not found", 404);
+    }
+    // Check if the role name is provided
+    if (data.name === "") {
+        throw new AppError("Role name is required", 400);
     }
 
     const updatedRole = await prisma.role.update({
@@ -62,7 +72,14 @@ export const assignRoleToUser = async (userId: number, roleId: string) => {
     if (!user) {
         throw new AppError("User not found", 404);
     }
-
+    // Check if the user ID is provided
+    if (!userId){
+        throw new AppError("User ID is required", 400);
+    }
+    // Check if the role ID is provided
+    if (!roleId){
+        throw new AppError("Role ID is required", 400);
+    }
     // Check if the role exists
     const role = await prisma.role.findUnique({ where: { id: roleId } });
     if (!role) {

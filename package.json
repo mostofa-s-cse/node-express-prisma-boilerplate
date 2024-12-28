@@ -3,11 +3,11 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "dev": "ts-node -r dotenv/config src/server.ts",
-    "start": "tsc && node dist/server.js",
-    "build": "tsc",
-    "test": "jest"
-  },
+  "dev": "nodemon --watch src --exec ts-node -r dotenv/config src/server.ts",
+  "start": "tsc && node dist/server.js",
+  "build": "tsc",
+  "test": "jest"
+},
   "prisma": {
     "seed": "ts-node --require dotenv/config prisma/seed.ts"
   },
@@ -46,7 +46,7 @@
     "dotenv": "^16.4.7",
     "jest": "^29.7.0",
     "jest-mock": "^29.7.0",
-    "nodemon": "^3.1.7",
+    "nodemon": "^3.1.9",
     "prisma": "^6.1.0",
     "supertest": "^7.0.0",
     "ts-jest": "^29.2.5",
